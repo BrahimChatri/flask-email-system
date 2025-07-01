@@ -1,0 +1,7 @@
+[project]
+name = "flask-email-system"
+version = "0.1.0"
+description = "A learning project to build a basic email system with Flask, featuring user authentication, JWT, MongoDB, password hashing, and encryption."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = []
