@@ -18,6 +18,10 @@ venv.bak/
 dist/
 build/
 .eggs/
+.venv
+.venv/
+# Logs files
+*.log
 
 # Installer logs
 pip-log.txt
