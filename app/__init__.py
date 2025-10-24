@@ -1,59 +1,67 @@
-from flask import Flask
-from app.auth import auth_bp, BLACKLIST
-from app.mail import mail_bp
-from app.user import user_bp
 from flask import Flask, jsonify, request
-from dotenv import load_dotenv
 from flask_jwt_extended import JWTManager
 from flask_mail import Mail
 from flask_cors import CORS
-from flask_limiter import Limiter, RateLimitExceeded
-from flask_limiter.util import get_remote_address
+from flask_limiter import RateLimitExceeded
+from dotenv import load_dotenv
+import os
 
-limiter = Limiter(
-    key_func=get_remote_address,
-    default_limits=["200 per day", "50 per hour"],
-    storage_uri="memory://"
-)
+from app.auth import auth_bp
+from app.auth.logout import BLACKLIST
+from app.mail import mail_bp
+from app.user import user_bp
+from app.extensions import limiter
 
+load_dotenv()
 
 def create_app():
     app = Flask(__name__)
     
-    # Load configs first
+    # Load configuration
     app.config.from_object('config.Config')
+    
+    # Ensure upload directory exists
+    os.makedirs(app.config.get('UPLOAD_FOLDER', 'uploads'), exist_ok=True)
     
     # Initialize extensions
     jwt = JWTManager(app)
     mail = Mail(app)
     CORS(app)
-
-    # initialize the limiter
+    
+    # Initialize rate limiter
     limiter.init_app(app)
-
-    # Register Blueprints
+    
+    # Register blueprints
     app.register_blueprint(auth_bp)
     app.register_blueprint(mail_bp)
     app.register_blueprint(user_bp)
     
-    # Token revocation callback
+    # JWT token revocation callback
     @jwt.token_in_blocklist_loader
     def check_if_token_revoked(jwt_header, jwt_payload):
         jti = jwt_payload["jti"]
         return jti in BLACKLIST
     
-    # # to see the request data for debugging 
-    # @app.before_request
-    # def log_request():
-    #     print(f"➡️ {request.method} {request.path}")
-    #     print("Headers:", dict(request.headers))
-    #     print("Body:", request.get_data())
-    
-    # 404 handler
+    # Error handlers
     @app.errorhandler(404)
     def page_not_found(e):
-        return jsonify({"error": "the page you are looking for was not found"}), 404
+        return jsonify({"error": "The page you are looking for was not found"}), 404
+    
+    @app.errorhandler(405)
+    def method_not_allowed(e):
+        return jsonify({"error": "Method not allowed"}), 405
+    
+    @app.errorhandler(500)
+    def internal_server_error(e):
+        return jsonify({"error": "Internal server error"}), 500
+    
     @app.errorhandler(RateLimitExceeded)
     def ratelimit_handler(e):
-        return jsonify(error="Rate limit exceeded. Try again later."), 429
+        return jsonify({"error": "Rate limit exceeded. Try again later."}), 429
+    
+    # Health check endpoint
+    @app.route('/health')
+    def health_check():
+        return jsonify({"status": "healthy", "message": "Flask Gmail System is running"}), 200
+    
     return app
