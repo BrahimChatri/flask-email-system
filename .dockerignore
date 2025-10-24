@@ -1,0 +1,26 @@
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Virtualenvs
+.venv/
+env/
+venv/
+
+# Git
+.git
+.gitignore
+
+# Docker
+Dockerfile
+docker-compose.yml
+
+# Local configs & secrets
+.env
+*.local
+*.secret
+
+# OS
+.DS_Store
+Thumbs.db
