@@ -1,115 +1,308 @@
-# 📧 Flask Email System
+# Flask Gmail System
 
-This is a learning project that simulates a basic email system (inspired by Gmail) using the **Flask** framework. The goal is to understand core backend development concepts such as authentication, encryption, database interaction, and modular architecture.
+A comprehensive email system built with Flask, featuring user authentication, JWT, MongoDB, password hashing, encryption, and full email functionality.
 
----
+## Features
 
-## 🚀 Features
+### 🔐 Authentication & Security
+- **JWT-based authentication** with access and refresh tokens
+- **Password hashing** using bcrypt
+- **Data encryption** for sensitive user information
+- **Rate limiting** to prevent abuse
+- **CORS support** for cross-origin requests
 
-- ✅ User Registration & Login
-- 🔒 Secure Password Hashing using **bcrypt**
-- 🔑 JWT-based Authentication with **flask-jwt-extended**
-- 🗄 MongoDB Integration using **pymongo**
-- 🔐 Message & User Data Encryption
-- 📬 Send/Receive Emails (basic simulation)
-- 🧩 Modular Architecture with Flask Blueprints
-- 🛠 Environment Config with `.env` & `python-dotenv`
-- 📦 Project managed using **uv** and **pyproject.toml**
+### 📧 Email Functionality
+- **Send emails** with support for multiple recipients
+- **Email attachments** with file validation
+- **Reply and forward** functionality
+- **Email threading** for conversations
+- **Search emails** by subject, body, or recipients
+- **Email flags** (read, starred, important, deleted)
+- **Folder management** (inbox, sent, archive, trash)
 
----
+### 👤 User Management
+- **User registration** with validation
+- **Profile management** with avatar upload
+- **Settings management** (notifications, privacy, theme)
+- **User search** functionality
+- **Account deactivation**
 
-## 🗂 Project Structure
+### 📊 Statistics & Monitoring
+- **Email statistics** (counts by folder, unread, starred)
+- **Storage usage** tracking
+- **User activity** logging
+- **Comprehensive error logging**
 
+## Tech Stack
+
+- **Backend**: Flask 3.1+
+- **Database**: MongoDB with PyMongo
+- **Authentication**: Flask-JWT-Extended
+- **Security**: bcrypt, cryptography
+- **Rate Limiting**: Flask-Limiter
+- **Email**: Flask-Mail
+- **CORS**: Flask-CORS
+- **Python**: 3.12+
+
+## Installation
+
+### Prerequisites
+
+1. **Python 3.12+**
+2. **MongoDB** (local or cloud instance)
+3. **Git**
+
+### Setup
+
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd flask-gmail-system
+   ```
+
+2. **Create virtual environment**
+   ```bash
+   python -m venv .venv
+   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+   ```
+
+3. **Install dependencies**
+   ```bash
+   pip install -e .
+   ```
+
+4. **Environment Configuration**
+   
+   Create a `.env` file in the root directory:
+   ```env
+   # Flask Configuration
+   SECRET_KEY=your-secret-key-here-change-in-production
+   JWT_SECRET_KEY=your-jwt-secret-key-here-change-in-production
+   
+   # MongoDB Configuration
+   MONGODB_URI=mongodb://localhost:27017/
+   DATABASE_NAME=flask_gmail_system
+   
+   # Email Configuration
+   SECURITY_PASSWORD_SALT=your-password-salt-here-change-in-production
+   MAIL_SERVER=smtp.gmail.com
+   MAIL_PORT=587
+   MAIL_USERNAME=your-email@gmail.com
+   MAIL_PASSWORD=your-app-password
+   MAIL_USE_TLS=True
+   MAIL_USE_SSL=False
+   MAIL_DEFAULT_SENDER=your-email@gmail.com
+   
+   # Encryption Key (for encrypting sensitive user data)
+   ENCRYPTION_KEY=your-encryption-key-here-change-in-production
+   ```
+
+5. **Start MongoDB**
+   ```bash
+   # If using local MongoDB
+   mongod
+   ```
+
+6. **Run the application**
+   ```bash
+   python app.py
+   ```
+
+The application will be available at `http://localhost:5000`
+
+## API Endpoints
+
+### Authentication
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/auth/register` | Register a new user |
+| POST | `/auth/login` | Login user |
+| POST | `/auth/logout` | Logout user |
+| POST | `/auth/refresh` | Refresh JWT token |
+| GET | `/auth/me` | Get current user info |
+| GET | `/auth/check-username/<username>` | Check username availability |
+| GET | `/auth/check-email/<email>` | Check email availability |
+
+### Email Management
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/mail/inbox` | Get user's inbox |
+| GET | `/mail/sent` | Get sent emails |
+| GET | `/mail/email/<email_id>` | Get specific email |
+| POST | `/mail/send` | Send new email |
+| POST | `/mail/send-with-attachments` | Send email with attachments |
+| POST | `/mail/reply/<email_id>` | Reply to email |
+| POST | `/mail/forward/<email_id>` | Forward email |
+| POST | `/mail/email/<email_id>/read` | Mark email as read |
+| POST | `/mail/email/<email_id>/star` | Toggle star status |
+| POST | `/mail/email/<email_id>/important` | Toggle important status |
+| POST | `/mail/email/<email_id>/move` | Move email to folder |
+| DELETE | `/mail/email/<email_id>/delete` | Delete email |
+| GET | `/mail/search` | Search emails |
+| GET | `/mail/stats` | Get email statistics |
+| GET | `/mail/thread/<thread_id>` | Get email thread |
+
+### User Profile
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/user/profile` | Get user profile |
+| PUT | `/user/profile` | Update user profile |
+| POST | `/user/profile/avatar` | Upload avatar |
+| GET | `/user/stats` | Get user statistics |
+| GET | `/user/search` | Search users |
+| POST | `/user/profile/change-password` | Change password |
+| POST | `/user/profile/deactivate` | Deactivate account |
+
+### Settings
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/user/settings` | Get user settings |
+| PUT | `/user/settings` | Update user settings |
+| PUT | `/user/settings/notifications` | Update notification settings |
+| PUT | `/user/settings/privacy` | Update privacy settings |
+| PUT | `/user/settings/theme` | Update theme |
+| POST | `/user/settings/reset` | Reset settings to default |
+| GET | `/user/settings/export` | Export settings |
+| POST | `/user/settings/import` | Import settings |
+
+## Usage Examples
+
+### Register a new user
+```bash
+curl -X POST http://localhost:5000/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "john_doe",
+    "password": "securepassword123",
+    "email": "john@example.com",
+    "first_name": "John",
+    "last_name": "Doe"
+  }'
 ```
 
-flask-email-system/
-├── app.py               # Entry point
-├── config.py            # Configuration settings
-├── .env                 # Environment variables
-├── pyproject.toml       # Project & dependency management (via uv)
+### Login
+```bash
+curl -X POST http://localhost:5000/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "john_doe",
+    "password": "securepassword123"
+  }'
+```
+
+### Send an email
+```bash
+curl -X POST http://localhost:5000/mail/send \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -d '{
+    "recipients": ["recipient@example.com"],
+    "subject": "Hello from Flask Gmail System",
+    "body": "This is a test email sent from the Flask Gmail System."
+  }'
+```
+
+### Get inbox
+```bash
+curl -X GET http://localhost:5000/mail/inbox \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+## Project Structure
+
+```
+flask-gmail-system/
 ├── app/
-│   ├── **init**.py      # App factory + blueprint registration
-│   ├── auth/            # Auth routes: login, register, logout
-│   ├── user/            # User profile management
-│   ├── mail/            # Email features: send, inbox
-│   ├── models/          # MongoDB schemas and database logic
-│   └── utils/           # Reusable logic (JWT handling, logger, etc.)
-
-````
-
----
-
-## 🔧 Setup Instructions
-
-### 1. Clone the Repository
-
-```bash
-git clone https://github.com/BrahimChatri/flask-email-system.git
-cd flask-email-system
-````
-
-### 2. Set up virtual environment using `uv`
-
-```bash
-uv venv  # Or `python -m venv venv` if you don't use uv
-source .venv/bin/activate  # or .venv\Scripts\activate on Windows
+│   ├── __init__.py              # Flask app factory
+│   ├── extensions.py            # Flask extensions
+│   ├── auth/                    # Authentication module
+│   │   ├── __init__.py
+│   │   ├── login.py
+│   │   ├── register.py
+│   │   ├── logout.py
+│   │   ├── password_reset.py
+│   │   └── email_verification.py
+│   ├── mail/                    # Email module
+│   │   ├── __init__.py
+│   │   ├── inbox.py
+│   │   └── send.py
+│   ├── user/                    # User management module
+│   │   ├── __init__.py
+│   │   ├── profile.py
+│   │   └── settings.py
+│   ├── models/                  # Database models
+│   │   ├── __init__.py
+│   │   ├── user_model.py
+│   │   └── mail_model.py
+│   └── utils/                   # Utility functions
+│       ├── __init__.py
+│       ├── authmanager.py
+│       └── logger.py
+├── config.py                    # Configuration
+├── app.py                       # Application entry point
+├── pyproject.toml              # Project dependencies
+├── README.md                   # This file
+└── logs/                       # Application logs
 ```
 
-### 3. Install Dependencies
+## Security Features
 
+- **Password Hashing**: All passwords are hashed using bcrypt
+- **Data Encryption**: Sensitive user data is encrypted using Fernet
+- **JWT Tokens**: Secure token-based authentication
+- **Rate Limiting**: Prevents abuse and brute force attacks
+- **Input Validation**: Comprehensive validation for all inputs
+- **Error Handling**: Secure error handling without information leakage
+
+## Development
+
+### Running Tests
 ```bash
-uv sync # Or use `pip install -r requirements.txt` if you don't use uv
+pytest
 ```
 
-### 4. Set up your `.env` file
-
-Create a `.env` file with the following content:
-
-```env
-SECRET_KEY=your_flask_secret
-JWT_SECRET_KEY=your_jwt_secret
-MONGO_URI=mongodb://localhost:27017/email_db
-MAIL_USERNAME=your_email@example.com
-MAIL_PASSWORD=your_email_password
-```
-
-> ⚠ Never commit your `.env` file or secrets to GitHub.
-
----
-
-## 🏁 Running the App
-
+### Code Formatting
 ```bash
-uv run app.py # Or `python app.py`
+black .
 ```
 
-Flask will start on `http://127.0.0.1:5000`.
+### Linting
+```bash
+flake8 .
+```
 
----
+### Type Checking
+```bash
+mypy .
+```
 
-## 📬 Endpoints Overview
+## Contributing
 
-| Route            | Method | Description                 |
-| ---------------- | ------ | --------------------------- |
-| `/auth/register` | POST   | Register a new user         |
-| `/auth/login`    | POST   | Login and get JWT           |
-| `/user/profile`  | GET    | View current user's profile |
-| `/mail/inbox`    | GET    | View received messages      |
-| `/mail/send`     | POST   | Send a new message          |
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests for new functionality
+5. Ensure all tests pass
+6. Submit a pull request
 
+## License
 
----
+This project is licensed under the MIT License - see the LICENSE file for details.
 
-## 🧠 Learning Goals
+## Support
 
-* Understand backend authentication and JWT
-* Learn how to structure a real-world Flask project
-* Practice integrating MongoDB into Python apps
-* Work with encryption and security best practices
-* Use modern Python tooling (`uv`, `.env`, `pyproject.toml`)
+For support and questions, please open an issue on GitHub or contact the development team.
 
----
+## Changelog
 
-## 🪪 License
-
-This project is licensed under the [MIT](LICENSE) License.
+### v0.1.0
+- Initial release
+- Complete authentication system
+- Full email functionality
+- User profile management
+- Settings management
+- Comprehensive API documentation
