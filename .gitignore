@@ -22,7 +22,7 @@ build/
 .venv/
 # Logs files
 *.log
-
+log/
 # Installer logs
 pip-log.txt
 pip-delete-this-directory.txt
@@ -56,6 +56,10 @@ Desktop.ini
 # PyCharm
 .idea/
 
+frontend
+frontend/
+start-dev.bat
+start-dev.sh
 # Flask
 instance/
 *.db
